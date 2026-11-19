@@ -21,7 +21,7 @@ async function openPreview() {
   try {
     const raw = Uint8Array.from(atob(secret.replace(/-/g, '+').replace(/_/g, '/') + '='), c => c.charCodeAt(0));
     const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
-    const response = await fetch('./game.enc?v=1baea28f7f26a3ec', {referrerPolicy:'no-referrer',cache:'no-store'});
+    const response = await fetch('./game.enc?v=d8f7750225751d9d', {referrerPolicy:'no-referrer',cache:'no-store'});
     if (!response.ok) throw new Error('Preview unavailable');
     const bytes = new Uint8Array(await response.arrayBuffer());
     const decrypted = await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},key,bytes.slice(12));
