@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="nl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Nightshift Butterfly · Testversie</title>
+<style>
+html,body{margin:0;height:100%;background:#171044;color:white;font:16px system-ui}
+p{padding:24px}iframe{display:block;width:100%;height:100%;border:0}
+</style>
+<p id="status" role="status">De testversie wordt geopend…</p>
+<script>
+async function openPreview() {
+  const status = document.getElementById('status');
+  const secret = location.hash.slice(1);
+  if (!/^[A-Za-z0-9_-]{43}$/.test(secret)) {
+    status.textContent = 'Open de volledige geheime speellink.';
+    return;
+  }
+  try {
+    const raw = Uint8Array.from(atob(secret.replace(/-/g, '+').replace(/_/g, '/') + '='), c => c.charCodeAt(0));
+    const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
+    const response = await fetch('./game.enc', {referrerPolicy:'no-referrer'});
+    if (!response.ok) throw new Error('Preview unavailable');
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    const decrypted = await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},key,bytes.slice(12));
+    const stream = new Blob([decrypted]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const html = await new Response(stream).text();
+    const game = document.createElement('iframe');
+    game.title = 'Nightshift Butterfly · Speelbare testversie';
+    game.src = URL.createObjectURL(new Blob([html], {type:'text/html;charset=utf-8'}));
+    document.body.replaceChildren(game);
+  } catch {
+    status.textContent = 'De testversie kon niet worden geopend. Controleer de volledige speellink.';
+  }
+}
+openPreview();
+</script>
+</html>
