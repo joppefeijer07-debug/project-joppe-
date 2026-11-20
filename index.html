@@ -21,7 +21,7 @@ async function openPreview() {
   try {
     const raw = Uint8Array.from(atob(secret.replace(/-/g, '+').replace(/_/g, '/') + '='), c => c.charCodeAt(0));
     const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
-    const response = await fetch('./game.enc?v=d8f7750225751d9d', {referrerPolicy:'no-referrer',cache:'no-store'});
+    const response = await fetch('./game.enc?v=ca3ebf37129bee58', {referrerPolicy:'no-referrer',cache:'no-store'});
     if (!response.ok) throw new Error('Preview unavailable');
     const bytes = new Uint8Array(await response.arrayBuffer());
     const decrypted = await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},key,bytes.slice(12));
@@ -29,6 +29,8 @@ async function openPreview() {
     const html = await new Response(stream).text();
     const game = document.createElement('iframe');
     game.title = 'Nightshift Butterfly · Speelbare testversie';
+    const variant = new URLSearchParams(location.search).get('vlinder');
+    if (['flits', 'nacht', 'kaarten'].includes(variant)) game.name = 'nightshift-vlinder-' + variant;
     game.addEventListener('load', () => {
       for (const icon of game.contentDocument.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]')) {
         document.head.append(icon.cloneNode(true));
